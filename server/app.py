@@ -103,13 +103,31 @@ def get_local_ip():
         s.close()
     return ip
 
-def send_telnet_commands(commands, timeout=5):
-    """Executes commands on the radio using pure sockets (compatible with Python 3.13/3.14+)."""
+def send_telnet_commands(commands, timeout=3):
+    """Executes commands on the radio using pure sockets with IP auto-failover."""
     global RADIO_IP
-    try:
-        s = socket.create_connection((RADIO_IP, 23), timeout=timeout)
-        s.settimeout(timeout)
+    candidate_ips = [RADIO_IP]
+    for alt in ["192.168.1.180", "192.168.1.141"]:
+        if alt not in candidate_ips:
+            candidate_ips.append(alt)
 
+    s = None
+    last_err = ""
+    for ip in candidate_ips:
+        try:
+            s = socket.create_connection((ip, 23), timeout=timeout)
+            s.settimeout(timeout)
+            if ip != RADIO_IP:
+                RADIO_IP = ip
+            break
+        except Exception as e:
+            last_err = str(e)
+            s = None
+
+    if not s:
+        return False, f"Failed to connect to radio at {candidate_ips}: {last_err}"
+
+    try:
         def read_until(pattern):
             buf = b""
             while pattern not in buf:
@@ -135,6 +153,11 @@ def send_telnet_commands(commands, timeout=5):
         s.close()
         return True, "\n".join(output)
     except Exception as e:
+        if s:
+            try:
+                s.close()
+            except:
+                pass
         return False, str(e)
 
 @app.route("/")

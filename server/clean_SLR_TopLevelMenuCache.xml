@@ -6,6 +6,7 @@
 </config-predicate>
 </config-predicates>
 <menu>
+<client-menu menu="PRESETS" icon="STATIONS">gettext:Presets</client-menu>
 <client-menu menu="HISTORY" icon="STATIONS">gettext:History</client-menu>
 <client-menu menu="FM" icon="FM">gettext:FM</client-menu>
 <client-menu menu="ALARM" icon="ALARM" predicate="alarm-off" value="FALSE">gettext:Alarm Clock</client-menu>

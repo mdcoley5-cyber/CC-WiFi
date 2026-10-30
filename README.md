@@ -23,12 +23,11 @@ In early 2021, Reciva's parent company decommissioned the global Reciva web port
 ## Solutions Provided
 
 * **Clean LCD Menus:** Pruned dead cloud aggregator XML links from `/mnt/config/SLR_TopLevelMenuCache.xml`. The radio menu is snappy and clean, displaying only functional features: **Presets**, **History**, **FM**, **Alarm Clock**, **Sleep Timer**, and **Configure**.
-* **Physical Preset Stepping Buttons:**
-  * **`>>` (Button 3):** Mapped to `NEXT_PRESET` (cycles to the next station).
-  * **`<<` (Button 2):** Mapped to `PREVIOUS_PRESET` (cycles to the previous station).
-  * **`Reply` Button:** Mapped to `PRESET_MENU` (opens the visual on-screen preset selector).
-  * **Rotary Dial Press (`Select`):** Immediately plays the highlighted station.
-* **Direct Top-Level Station List:** Enabled `Option: presets-as-menu-items on` so your saved presets appear directly on the main menu by name (strictly maintaining the safe default buffer of 10 presets).
+* **Physical Buttons & Navigation:**
+  * **Buttons `1`, `2`, `3`:** Direct 1-touch hotkeys to tune instantly into Preset 1, Preset 2, or Preset 3.
+  * **`Reply` Button:** Mapped to `RECALL_PRESET` to open the on-screen **"Recall preset"** popup dialog from anywhere.
+  * **Rotary Dial & Press (`Select`):** Scroll through any station preset on the LCD screen and press to play.
+* **Top-Level "Presets" Menu:** Added `<client-menu menu="PRESETS">` directly at the top of the LCD menu so all saved stations (Presets 1–10) are immediately accessible without dead cloud submenus.
 * **Smart Local Stream Bridge & Transcoder (Python/Flask):** Runs on your local network, converting modern HTTPS streams into HTTP MP3/AAC streams that the radio plays smoothly. Includes a web dashboard to search 40,000+ stations via Radio-Browser.info and save them to radio presets with one click.
 * **Hardware Safety Net (Permanent Push-Button Bypass Mod):** Complete reverse-engineering of the motherboard socket (`J1`). Soldering a miniature tactile push-button across Pin 31 (GND) and Pin 29 (AIN2) allows anyone to force Hardware ID `620` during boot. If a bad config is ever applied, holding the button recovers the radio to Telnet in 10 seconds without disassembly.
 * **Automated Network Recovery Tools:** Multi-threaded Python monitor that detects the radio over the network and automatically restores factory-clean configurations.
