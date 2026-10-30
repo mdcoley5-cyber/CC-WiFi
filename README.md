@@ -95,7 +95,11 @@ In early 2021, Reciva's parent company decommissioned the global Reciva web port
 To manage presets and stream modern stations:
 1. Double-click `Run_Smart_Radio_Bridge.bat` (or run `python server/app.py`).
 2. Your browser will open to `http://localhost:5000`.
-3. Search for any station in the global directory and assign it directly to Presets 1–10.
+3. Browse and assign stations across 3 specialized tabs:
+   * **Live Radio Directory:** Search over 62,000 stations with smart dual-search (names & tags), 21 curated genre buttons, country origin filters, and sorting by popularity or bitrate.
+   * **Podcasts:** Search and stream global podcasts directly.
+   * **Custom Stream URL:** Paste any direct MP3, AAC, or HTTPS stream URL with live browser preview and 1-click assignment.
+4. Presets 1–10 are starred (`★`) to indicate direct access on the physical radio buttons and LCD main menu.
 
 ---
 

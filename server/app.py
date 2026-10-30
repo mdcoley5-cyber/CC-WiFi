@@ -334,53 +334,108 @@ def play_preset():
 
 @app.route("/api/search")
 def search_stations():
-    """Search stations by artist, title, tag, or country using Radio-Browser API."""
+    """
+    Enhanced multi-field search for Radio-Browser API:
+    - Smart dual-search across station name and genre tags
+    - Filtering by country, tag/genre, order, codec
+    - Dynamic deduplication and formatting
+    """
     query = request.args.get("q", "").strip()
     tag = request.args.get("tag", "").strip()
     country = request.args.get("country", "").strip()
-    limit = int(request.args.get("limit", 20))
-    page = int(request.args.get("page", 1))
+    order = request.args.get("order", "votes").strip()
+    limit = max(10, min(100, int(request.args.get("limit", 30))))
+    page = max(1, int(request.args.get("page", 1)))
     offset = (page - 1) * limit
 
-    results = []
+    valid_orders = {"votes", "clickcount", "bitrate", "name", "random"}
+    if order not in valid_orders:
+        order = "votes"
+
+    raw_stations = []
     for mirror in RADIO_BROWSER_MIRRORS:
         try:
-            params = {
+            base_params = {
                 "limit": limit,
                 "offset": offset,
-                "order": "votes",
-                "reverse": "true",
+                "order": order,
+                "reverse": "false" if order == "name" else "true",
                 "hidebroken": "true"
             }
-            if query:
-                params["name"] = query
-            if tag:
-                params["tag"] = tag
             if country:
-                params["countrycode"] = country
+                base_params["countrycode"] = country.upper()
 
-            url = f"{mirror}/json/stations/search"
-            resp = requests.get(url, params=params, timeout=5)
-            if resp.status_code == 200:
-                raw_stations = resp.json()
-                for s in raw_stations:
-                    stream_url = s.get("url_resolved") or s.get("url")
-                    if not stream_url:
-                        continue
-                    results.append({
-                        "id": s.get("stationuuid"),
-                        "name": s.get("name", "Unknown"),
-                        "url": stream_url,
-                        "favicon": s.get("favicon", ""),
-                        "tags": s.get("tags", ""),
-                        "country": s.get("country", ""),
-                        "codec": s.get("codec", "MP3"),
-                        "bitrate": s.get("bitrate", 128),
-                        "votes": s.get("votes", 0)
-                    })
+            if tag:
+                # Specific genre tag selected
+                params = dict(base_params)
+                params["tag"] = tag
+                if query:
+                    params["name"] = query
+                resp = requests.get(f"{mirror}/json/stations/search", params=params, timeout=5)
+                if resp.status_code == 200:
+                    raw_stations = resp.json()
+                    break
+            elif query:
+                # Smart dual search: search both by name and by tag
+                stations_map = {}
+                
+                # 1. Search by name
+                p1 = dict(base_params)
+                p1["name"] = query
+                r1 = requests.get(f"{mirror}/json/stations/search", params=p1, timeout=5)
+                if r1.status_code == 200:
+                    for s in r1.json():
+                        stations_map[s.get("stationuuid")] = s
+                
+                # 2. Search by tag if query matches a tag/genre
+                p2 = dict(base_params)
+                p2["tag"] = query.lower()
+                r2 = requests.get(f"{mirror}/json/stations/search", params=p2, timeout=5)
+                if r2.status_code == 200:
+                    for s in r2.json():
+                        uid = s.get("stationuuid")
+                        if uid and uid not in stations_map:
+                            stations_map[uid] = s
+                
+                raw_stations = list(stations_map.values())
+                if order == "votes":
+                    raw_stations.sort(key=lambda x: int(x.get("votes", 0)), reverse=True)
+                elif order == "clickcount":
+                    raw_stations.sort(key=lambda x: int(x.get("clickcount", 0)), reverse=True)
+                elif order == "bitrate":
+                    raw_stations.sort(key=lambda x: int(x.get("bitrate", 0)), reverse=True)
+                elif order == "name":
+                    raw_stations.sort(key=lambda x: (x.get("name") or "").lower())
+                
+                raw_stations = raw_stations[:limit]
                 break
-        except Exception:
+            else:
+                # General top stations
+                resp = requests.get(f"{mirror}/json/stations/search", params=base_params, timeout=5)
+                if resp.status_code == 200:
+                    raw_stations = resp.json()
+                    break
+        except Exception as e:
             continue
+
+    results = []
+    for s in raw_stations:
+        stream_url = s.get("url_resolved") or s.get("url")
+        if not stream_url:
+            continue
+        results.append({
+            "id": s.get("stationuuid"),
+            "name": s.get("name", "Unknown"),
+            "url": stream_url,
+            "favicon": s.get("favicon", ""),
+            "tags": s.get("tags", ""),
+            "country": s.get("country", ""),
+            "countrycode": s.get("countrycode", ""),
+            "codec": s.get("codec", "MP3"),
+            "bitrate": s.get("bitrate", 128),
+            "votes": s.get("votes", 0),
+            "clickcount": s.get("clickcount", 0)
+        })
 
     return jsonify({
         "page": page,
@@ -388,6 +443,55 @@ def search_stations():
         "count": len(results),
         "results": results
     })
+
+@app.route("/api/categories")
+def get_categories():
+    """Curated categories and tags with display icons."""
+    categories = [
+        {"name": "All Stations", "tag": "", "icon": "🌟"},
+        {"name": "Classic Rock", "tag": "classic rock", "icon": "🎸"},
+        {"name": "Country", "tag": "country", "icon": "🤠"},
+        {"name": "NPR / News", "tag": "npr", "icon": "📻"},
+        {"name": "Jazz", "tag": "jazz", "icon": "🎷"},
+        {"name": "80s Hits", "tag": "80s", "icon": "🕺"},
+        {"name": "Blues", "tag": "blues", "icon": "☕"},
+        {"name": "Classical", "tag": "classical", "icon": "🎻"},
+        {"name": "Oldies", "tag": "oldies", "icon": "🕶️"},
+        {"name": "Ambient", "tag": "ambient", "icon": "🎧"},
+        {"name": "70s Retro", "tag": "70s", "icon": "🕺"},
+        {"name": "90s Hits", "tag": "90s", "icon": "💿"},
+        {"name": "Electronic", "tag": "electronic", "icon": "⚡"},
+        {"name": "Pop / Top 40", "tag": "pop", "icon": "🎶"},
+        {"name": "Reggae", "tag": "reggae", "icon": "🌴"},
+        {"name": "Soul & Funk", "tag": "soul", "icon": "🎺"},
+        {"name": "Hard Rock", "tag": "rock", "icon": "🤘"},
+        {"name": "Folk & Roots", "tag": "folk", "icon": "🪕"},
+        {"name": "Talk / Sports", "tag": "talk", "icon": "🎙️"},
+        {"name": "Latin / Spanish", "tag": "latin", "icon": "🌎"},
+        {"name": "Holiday / Xmas", "tag": "christmas", "icon": "🎄"}
+    ]
+    return jsonify(categories)
+
+@app.route("/api/countries")
+def get_countries():
+    """Curated list of popular radio broadcasting countries."""
+    countries = [
+        {"code": "", "name": "All Countries", "flag": "🌐"},
+        {"code": "US", "name": "United States", "flag": "🇺🇸"},
+        {"code": "GB", "name": "United Kingdom", "flag": "🇬🇧"},
+        {"code": "CA", "name": "Canada", "flag": "🇨🇦"},
+        {"code": "AU", "name": "Australia", "flag": "🇦🇺"},
+        {"code": "DE", "name": "Germany", "flag": "🇩🇪"},
+        {"code": "FR", "name": "France", "flag": "🇫🇷"},
+        {"code": "IT", "name": "Italy", "flag": "🇮🇹"},
+        {"code": "ES", "name": "Spain", "flag": "🇪🇸"},
+        {"code": "NL", "name": "Netherlands", "flag": "🇳🇱"},
+        {"code": "IE", "name": "Ireland", "flag": "🇮🇪"},
+        {"code": "BR", "name": "Brazil", "flag": "🇧🇷"},
+        {"code": "MX", "name": "Mexico", "flag": "🇲🇽"},
+        {"code": "JP", "name": "Japan", "flag": "🇯🇵"}
+    ]
+    return jsonify(countries)
 
 @app.route("/api/podcasts")
 def search_podcasts():

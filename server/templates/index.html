@@ -365,6 +365,63 @@
             opacity: 0.9;
         }
 
+        /* Advanced Filter Controls Row */
+        .filter-controls-row {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .filter-group {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .filter-label {
+            font-size: 12px;
+            color: var(--text-muted);
+            font-weight: 500;
+        }
+
+        .filter-select {
+            background: rgba(10, 15, 29, 0.85);
+            border: 1px solid var(--surface-border);
+            border-radius: 10px;
+            padding: 8px 12px;
+            color: var(--text-main);
+            font-size: 13px;
+            font-weight: 500;
+            outline: none;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .filter-select:focus, .filter-select:hover {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 10px var(--accent-glow);
+        }
+
+        .btn-reset-filters {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            border-radius: 10px;
+            padding: 8px 14px;
+            font-size: 12.5px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-reset-filters:hover {
+            background: rgba(239, 68, 68, 0.15);
+            border-color: rgba(239, 68, 68, 0.4);
+            color: #f87171;
+        }
+
         /* Quick Filter Chips */
         .chips-list {
             display: flex;
@@ -377,11 +434,14 @@
             background: rgba(255, 255, 255, 0.04);
             border: 1px solid var(--surface-border);
             color: var(--text-muted);
-            padding: 6px 14px;
+            padding: 7px 14px;
             border-radius: 9999px;
-            font-size: 12px;
+            font-size: 12.5px;
             font-weight: 500;
             cursor: pointer;
+            display: flex;
+            align-items: center;
+            gap: 6px;
             transition: all 0.2s;
         }
 
@@ -389,6 +449,40 @@
             background: rgba(56, 189, 248, 0.15);
             border-color: var(--accent-primary);
             color: var(--accent-primary);
+            box-shadow: 0 0 12px var(--accent-glow);
+        }
+
+        /* Custom Stream Panel */
+        .custom-stream-wrap {
+            background: rgba(10, 15, 29, 0.7);
+            border: 1px solid var(--surface-border);
+            border-radius: 16px;
+            padding: 24px;
+            max-width: 680px;
+            margin: 0 auto;
+            display: flex;
+            flex-direction: column;
+            gap: 18px;
+        }
+
+        .custom-form-group {
+            display: flex;
+            flex-direction: column;
+            gap: 8px;
+        }
+
+        .custom-form-group label {
+            font-size: 13.5px;
+            font-weight: 600;
+            color: var(--text-main);
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .custom-form-hint {
+            font-size: 12px;
+            color: var(--text-muted);
         }
 
         /* Results List */
@@ -688,14 +782,11 @@
     <!-- Presets 1-40 Grid -->
     <section>
         <div class="section-header">
-            <h2 class="section-title"><span>🎛️</span> Radio Presets (Slots 1–40)</h2>
+            <h2 class="section-title"><span>🎛️</span> Radio Presets</h2>
             <div class="bank-tabs">
-                <button class="bank-btn active" id="bankActive" onclick="filterPresets('active')">Active Only</button>
-                <button class="bank-btn" id="bank1_10" onclick="filterPresets('1-10')">1–10</button>
-                <button class="bank-btn" id="bank11_20" onclick="filterPresets('11-20')">11–20</button>
-                <button class="bank-btn" id="bank21_30" onclick="filterPresets('21-30')">21–30</button>
-                <button class="bank-btn" id="bank31_40" onclick="filterPresets('31-40')">31–40</button>
-                <button class="bank-btn" id="bankAll" onclick="filterPresets('all')">All 40</button>
+                <button class="bank-btn active" id="bank1_10" onclick="filterPresets('1-10')">Presets 1–10 (Core Radio)</button>
+                <button class="bank-btn" id="bankActive" onclick="filterPresets('active')">Active Only</button>
+                <button class="bank-btn" id="bankAll" onclick="filterPresets('all')">All Slots (1–40)</button>
                 <button onclick="loadPresets()" class="bank-btn" style="color:var(--accent-primary);">↻ Refresh</button>
             </div>
         </div>
@@ -707,38 +798,140 @@
     <!-- Search & Discovery Panel -->
     <section class="search-panel">
         <div class="tabs">
-            <button class="tab-btn active" id="tabRadio" onclick="switchTab('radio')">🌐 Live Radio Stations & Artists</button>
+            <button class="tab-btn active" id="tabRadio" onclick="switchTab('radio')">🌐 Live Radio Directory (62,000+)</button>
             <button class="tab-btn" id="tabPodcast" onclick="switchTab('podcast')">🎙️ Podcasts</button>
+            <button class="tab-btn" id="tabCustom" onclick="switchTab('custom')">➕ Custom Stream URL</button>
         </div>
 
-        <!-- Search Bar -->
-        <div class="search-bar-wrap">
-            <input type="text" id="searchInput" class="search-input" placeholder="Search by artist (e.g. Depeche Mode, Beatles), station name, or genre..." onkeydown="if(event.key==='Enter') executeSearch(1)" />
-            <button class="btn-search" onclick="executeSearch(1)">Search</button>
+        <!-- Radio Search Section -->
+        <div id="radioSearchSection">
+            <!-- Search Bar -->
+            <div class="search-bar-wrap">
+                <input type="text" id="searchInput" class="search-input" placeholder="Search by artist (e.g. Depeche Mode, Beatles), station name, or genre..." onkeydown="if(event.key==='Enter') executeSearch(1)" />
+                <button class="btn-search" onclick="executeSearch(1)">Search</button>
+            </div>
+
+            <!-- Advanced Filter Controls Row -->
+            <div class="filter-controls-row">
+                <div class="filter-group">
+                    <span class="filter-label">Country:</span>
+                    <select id="countrySelect" class="filter-select" onchange="onCountryChange(this.value)">
+                        <option value="">🌐 All Countries</option>
+                        <option value="US">🇺🇸 United States</option>
+                        <option value="GB">🇬🇧 United Kingdom</option>
+                        <option value="CA">🇨🇦 Canada</option>
+                        <option value="AU">🇦🇺 Australia</option>
+                        <option value="DE">🇩🇪 Germany</option>
+                        <option value="FR">🇫🇷 France</option>
+                        <option value="IT">🇮🇹 Italy</option>
+                        <option value="ES">🇪🇸 Spain</option>
+                        <option value="NL">🇳🇱 Netherlands</option>
+                        <option value="IE">🇮🇪 Ireland</option>
+                        <option value="BR">🇧🇷 Brazil</option>
+                        <option value="MX">🇲🇽 Mexico</option>
+                        <option value="JP">🇯🇵 Japan</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">Sort:</span>
+                    <select id="orderSelect" class="filter-select" onchange="onOrderChange(this.value)">
+                        <option value="votes">🔥 Most Popular (Votes)</option>
+                        <option value="clickcount">📈 Trending (Most Listened)</option>
+                        <option value="bitrate">💎 Highest Bitrate</option>
+                        <option value="name">🔤 Name (A-Z)</option>
+                    </select>
+                </div>
+
+                <div class="filter-group">
+                    <span class="filter-label">Per Page:</span>
+                    <select id="limitSelect" class="filter-select" onchange="onLimitChange(this.value)">
+                        <option value="30">30 Stations</option>
+                        <option value="50">50 Stations</option>
+                        <option value="100">100 Stations</option>
+                    </select>
+                </div>
+
+                <button class="btn-reset-filters" onclick="resetFilters()" title="Reset all search filters">↺ Reset</button>
+            </div>
+
+            <!-- Quick Filter Chips -->
+            <div class="chips-list" id="chipsList">
+                <div class="chip active" onclick="applyTag('', this)">🌟 All Top</div>
+                <div class="chip" onclick="applyTag('classic rock', this)">🎸 Classic Rock</div>
+                <div class="chip" onclick="applyTag('country', this)">🤠 Country</div>
+                <div class="chip" onclick="applyTag('npr', this)">📻 NPR / News</div>
+                <div class="chip" onclick="applyTag('jazz', this)">🎷 Jazz</div>
+                <div class="chip" onclick="applyTag('80s', this)">🕺 80s Hits</div>
+                <div class="chip" onclick="applyTag('blues', this)">☕ Blues</div>
+                <div class="chip" onclick="applyTag('classical', this)">🎻 Classical</div>
+                <div class="chip" onclick="applyTag('oldies', this)">🕶️ Oldies</div>
+                <div class="chip" onclick="applyTag('ambient', this)">🎧 Ambient</div>
+                <div class="chip" onclick="applyTag('70s', this)">🕺 70s Retro</div>
+                <div class="chip" onclick="applyTag('90s', this)">💿 90s Hits</div>
+                <div class="chip" onclick="applyTag('electronic', this)">⚡ Electronic</div>
+                <div class="chip" onclick="applyTag('pop', this)">🎶 Pop / Top 40</div>
+                <div class="chip" onclick="applyTag('reggae', this)">🌴 Reggae</div>
+                <div class="chip" onclick="applyTag('soul', this)">🎺 Soul & Funk</div>
+                <div class="chip" onclick="applyTag('rock', this)">🤘 Hard Rock</div>
+                <div class="chip" onclick="applyTag('folk', this)">🪕 Folk & Roots</div>
+                <div class="chip" onclick="applyTag('talk', this)">🎙️ Talk / Sports</div>
+                <div class="chip" onclick="applyTag('latin', this)">🌎 Latin</div>
+                <div class="chip" onclick="applyTag('christmas', this)">🎄 Holiday</div>
+            </div>
+
+            <!-- Results List -->
+            <div class="results-container" id="resultsContainer">
+                <!-- Station cards rendered here -->
+            </div>
+
+            <!-- Pagination -->
+            <div class="pagination" id="paginationWrap" style="display: none;">
+                <button class="btn-page" id="btnPrev" onclick="changePage(-1)">← Previous</button>
+                <span class="page-indicator" id="pageIndicator">Page 1</span>
+                <button class="btn-page" id="btnNext" onclick="changePage(1)">Next →</button>
+            </div>
         </div>
 
-        <!-- Quick Filter Chips -->
-        <div class="chips-list" id="chipsList">
-            <div class="chip" onclick="applyTag('jazz')">Jazz</div>
-            <div class="chip" onclick="applyTag('classical')">Classical</div>
-            <div class="chip" onclick="applyTag('rock')">Classic Rock</div>
-            <div class="chip" onclick="applyTag('80s')">80s Hits</div>
-            <div class="chip" onclick="applyTag('npr')">NPR / News</div>
-            <div class="chip" onclick="applyTag('ambient')">Ambient / Relax</div>
-            <div class="chip" onclick="applyTag('blues')">Blues</div>
-            <div class="chip" onclick="applyTag('electronic')">Electronic</div>
-        </div>
+        <!-- Custom Stream URL Panel (Initially Hidden) -->
+        <div id="customStreamSection" style="display: none;">
+            <div class="custom-stream-wrap">
+                <div style="border-bottom: 1px solid var(--surface-border); padding-bottom: 12px;">
+                    <h3 style="font-size: 17px; font-weight: 600; margin-bottom: 4px;">➕ Assign Custom Audio Stream</h3>
+                    <p style="font-size: 13px; color: var(--text-muted); line-height: 1.4;">
+                        Paste any direct streaming link (HTTP or HTTPS). Modern HTTPS streams are automatically bridged by our local proxy server so the CC WiFi can play them smoothly!
+                    </p>
+                </div>
 
-        <!-- Results List -->
-        <div class="results-container" id="resultsContainer">
-            <!-- Station cards rendered here -->
-        </div>
+                <div class="custom-form-group">
+                    <label>Station or Stream Name</label>
+                    <input type="text" id="customNameInput" class="search-input" placeholder="e.g. My Favorite Jazz Feed" />
+                    <span class="custom-form-hint">Displayed on the radio's LCD screen. Special characters like '&' will be automatically sanitized.</span>
+                </div>
 
-        <!-- Pagination -->
-        <div class="pagination" id="paginationWrap" style="display: none;">
-            <button class="btn-page" id="btnPrev" onclick="changePage(-1)">← Previous</button>
-            <span class="page-indicator" id="pageIndicator">Page 1</span>
-            <button class="btn-page" id="btnNext" onclick="changePage(1)">Next →</button>
+                <div class="custom-form-group">
+                    <label>Direct Stream URL</label>
+                    <div style="display: flex; gap: 10px;">
+                        <input type="text" id="customUrlInput" class="search-input" placeholder="http://... or https://... (MP3, AAC, PLS, M3U)" style="flex: 1;" />
+                        <button class="btn-page" onclick="previewCustomStream()" title="Test audio in browser">▶ Test</button>
+                    </div>
+                    <span class="custom-form-hint">Supports Icecast, Shoutcast, direct audio servers, and modern HTTPS feeds.</span>
+                </div>
+
+                <div class="custom-form-group">
+                    <label>Target Preset Slot</label>
+                    <div id="customPresetSelectWrap">
+                        <!-- Filled by JS -->
+                    </div>
+                    <span class="custom-form-hint">Presets 1–10 correspond directly to the radio's physical stepping buttons and on-screen menu.</span>
+                </div>
+
+                <div style="padding-top: 8px;">
+                    <button class="btn-search" style="width: 100%; padding: 14px; font-size: 15px;" onclick="assignCustomStream()">
+                        ⚡ Save to CC WiFi & Play Now
+                    </button>
+                </div>
+            </div>
         </div>
     </section>
 </div>
@@ -757,11 +950,13 @@
     let currentPage = 1;
     let currentQuery = '';
     let currentTag = '';
-    const PAGE_LIMIT = 15;
+    let currentCountry = '';
+    let currentOrder = 'votes';
+    let currentLimit = 30;
     const MAX_PRESETS = 40;
     let currentPlayingUrl = '';
     let cachedPresets = [];
-    let currentBankFilter = 'active';
+    let currentBankFilter = '1-10';
 
     const browserAudio = document.getElementById('browserAudio');
 
@@ -990,9 +1185,11 @@
         for (let i = 1; i <= MAX_PRESETS; i++) {
             const presetObj = cachedPresets.find(p => p.id === i);
             const isAssigned = presetObj && presetObj.url;
-            const nameSuffix = isAssigned ? ` (${presetObj.name.substring(0, 16)})` : ' [Empty]';
+            const isCore = i <= 10;
+            const coreBadge = isCore ? "★ " : "";
+            const nameSuffix = isAssigned ? ` (${presetObj.name.substring(0, 15)})` : ' [Empty]';
             const selected = i === firstEmpty ? 'selected' : '';
-            options.push(`<option value="${i}" ${selected}>Preset ${i}${nameSuffix}</option>`);
+            options.push(`<option value="${i}" ${selected}>${coreBadge}Preset ${i}${nameSuffix}</option>`);
         }
         return `<select class="preset-select" id="${selectId}">${options.join('')}</select>`;
     }
@@ -1005,6 +1202,14 @@
             const newSel = document.getElementById(selectId);
             if (newSel && currentVal) newSel.value = currentVal;
         });
+        updateCustomPresetDropdown();
+    }
+
+    function updateCustomPresetDropdown() {
+        const wrap = document.getElementById('customPresetSelectWrap');
+        if (wrap) {
+            wrap.innerHTML = buildPresetDropdownHtml('customPresetSelect');
+        }
     }
 
     async function playPresetOnRadio(id) {
@@ -1030,16 +1235,64 @@
         currentTab = tab;
         document.getElementById('tabRadio').className = tab === 'radio' ? 'tab-btn active' : 'tab-btn';
         document.getElementById('tabPodcast').className = tab === 'podcast' ? 'tab-btn active' : 'tab-btn';
-        document.getElementById('chipsList').style.display = tab === 'radio' ? 'flex' : 'none';
-        document.getElementById('searchInput').placeholder = tab === 'radio' 
-            ? 'Search by artist (e.g. Depeche Mode, Beatles), station name, or genre...' 
-            : 'Search podcasts (e.g. The Daily, Radiolab, BBC News)...';
+        document.getElementById('tabCustom').className = tab === 'custom' ? 'tab-btn active' : 'tab-btn';
+
+        const radioSection = document.getElementById('radioSearchSection');
+        const customSection = document.getElementById('customStreamSection');
+        const chipsList = document.getElementById('chipsList');
+        const filterControls = document.querySelector('.filter-controls-row');
+
+        if (tab === 'custom') {
+            radioSection.style.display = 'none';
+            customSection.style.display = 'block';
+            updateCustomPresetDropdown();
+        } else {
+            radioSection.style.display = 'block';
+            customSection.style.display = 'none';
+            chipsList.style.display = tab === 'radio' ? 'flex' : 'none';
+            if (filterControls) filterControls.style.display = tab === 'radio' ? 'flex' : 'none';
+            document.getElementById('searchInput').placeholder = tab === 'radio' 
+                ? 'Search by artist (e.g. Depeche Mode, Beatles), station name, or genre...' 
+                : 'Search podcasts (e.g. The Daily, Radiolab, BBC News)...';
+            executeSearch(1);
+        }
+    }
+
+    function applyTag(tag, el) {
+        currentTag = tag;
+        document.querySelectorAll('.chips-list .chip').forEach(c => c.classList.remove('active'));
+        if (el) el.classList.add('active');
+        document.getElementById('searchInput').value = '';
         executeSearch(1);
     }
 
-    function applyTag(tag) {
-        currentTag = tag;
+    function onCountryChange(val) {
+        currentCountry = val;
+        executeSearch(1);
+    }
+
+    function onOrderChange(val) {
+        currentOrder = val;
+        executeSearch(1);
+    }
+
+    function onLimitChange(val) {
+        currentLimit = parseInt(val) || 30;
+        executeSearch(1);
+    }
+
+    function resetFilters() {
+        currentTag = '';
+        currentCountry = '';
+        currentOrder = 'votes';
+        currentLimit = 30;
         document.getElementById('searchInput').value = '';
+        document.getElementById('countrySelect').value = '';
+        document.getElementById('orderSelect').value = 'votes';
+        document.getElementById('limitSelect').value = '30';
+        document.querySelectorAll('.chips-list .chip').forEach(c => c.classList.remove('active'));
+        const firstChip = document.querySelector('.chips-list .chip');
+        if (firstChip) firstChip.classList.add('active');
         executeSearch(1);
     }
 
@@ -1052,7 +1305,7 @@
 
         if (currentTab === 'radio') {
             await searchRadio(q, currentPage);
-        } else {
+        } else if (currentTab === 'podcast') {
             await searchPodcasts(q);
         }
     }
@@ -1061,12 +1314,12 @@
         const container = document.getElementById('resultsContainer');
         const pagination = document.getElementById('paginationWrap');
         try {
-            const url = `/api/search?q=${encodeURIComponent(q)}&tag=${encodeURIComponent(currentTag)}&page=${page}&limit=${PAGE_LIMIT}`;
+            const url = `/api/search?q=${encodeURIComponent(q)}&tag=${encodeURIComponent(currentTag)}&country=${encodeURIComponent(currentCountry)}&order=${encodeURIComponent(currentOrder)}&limit=${currentLimit}&page=${page}`;
             const res = await fetch(url);
             const data = await res.json();
 
             if (!data.results || data.results.length === 0) {
-                container.innerHTML = '<div style="color:#94a3b8; padding:30px; text-align:center;">No live stations found. Try another search term or genre chip!</div>';
+                container.innerHTML = '<div style="color:#94a3b8; padding:30px; text-align:center;">No live stations found matching your criteria. Try another search term, country, or genre!</div>';
                 pagination.style.display = 'none';
                 return;
             }
@@ -1083,6 +1336,7 @@
                             <div class="station-sub">
                                 <span class="badge">${s.country || 'Global'}</span>
                                 <span class="badge bitrate">${s.codec} ${s.bitrate ? s.bitrate + 'k' : ''}</span>
+                                ${s.votes ? `<span class="badge" title="Total Votes">★ ${s.votes}</span>` : ''}
                                 ${s.tags ? `<span class="badge">${s.tags.split(',').slice(0, 3).join(', ')}</span>` : ''}
                             </div>
                         </div>
@@ -1099,11 +1353,34 @@
             pagination.style.display = 'flex';
             document.getElementById('pageIndicator').innerText = `Page ${page}`;
             document.getElementById('btnPrev').disabled = page <= 1;
-            document.getElementById('btnNext').disabled = data.results.length < PAGE_LIMIT;
+            document.getElementById('btnNext').disabled = data.results.length < currentLimit;
 
         } catch (e) {
             container.innerHTML = '<div style="color:#ef4444; padding:20px;">Search failed to connect to directory.</div>';
         }
+    }
+
+    function previewCustomStream() {
+        const url = document.getElementById('customUrlInput').value.trim();
+        if (!url) {
+            showToast('Please enter a stream URL first', '⚠️');
+            return;
+        }
+        togglePreview(url, null);
+    }
+
+    async function assignCustomStream() {
+        const name = document.getElementById('customNameInput').value.trim() || 'Custom Stream';
+        const url = document.getElementById('customUrlInput').value.trim();
+        const select = document.getElementById('customPresetSelect');
+        const presetNum = select ? select.value : 1;
+
+        if (!url) {
+            showToast('Please enter a stream URL', '❌');
+            return;
+        }
+
+        await assignStationToPreset('custom_' + Date.now(), name, url, presetNum);
     }
 
     async function searchPodcasts(q) {
