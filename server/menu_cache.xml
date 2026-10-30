@@ -1,0 +1,98 @@
+cat /mnt/config/SLR_TopLevelMenuCache.xml
+<top-level><config-predicates><config-predicate name="old-ui"><require option="ui-level" type="int" value="0"></require>
+</config-predicate>
+<config-predicate name="old-and-last"><and><require option="ui-level" type="int" value="0"></require>
+<or><require option="menu-order" type="select" value="config-last"></require>
+<require option="menu-order" type="select" value="cf984"></require>
+</or>
+</and>
+</config-predicate>
+<config-predicate name="new-or-last"><or><require option="ui-level" type="int" value="1"></require>
+<or><require option="menu-order" type="select" value="config-last"></require>
+<require option="menu-order" type="select" value="cf984"></require>
+</or>
+</or>
+</config-predicate>
+<config-predicate name="stations-history"><require option="stations-history" type="bool" value="true"></require>
+</config-predicate>
+<config-predicate name="alarm-off"><require option="alarm-clock" type="select" value="off"></require>
+</config-predicate>
+<config-predicate name="sleep-in-main-menu"><require option="sleep-timer-in-main-menu" type="bool" value="true"></require>
+</config-predicate>
+<config-predicate name="hotel-mode"><require option="hospitality-mode-menus" type="bool" value="true"></require>
+</config-predicate>
+<config-predicate name="search-shown"><require option="stations-substring-search" type="bool" value="true"></require>
+</config-predicate>
+<config-predicate name="my-stuff-out-of-main-menu"><require option="my-stuff-out-of-main-menu" type="bool" value="true"></require>
+</config-predicate>
+</config-predicates>
+<item-group name="STATIONS_ITEMS"><client-menu menu="LOCATION">gettext:Location</client-menu>
+<client-menu menu="LOCATIONGENRE">gettext:Loc x Genre</client-menu>
+<client-menu menu="GENRE">gettext:Genre</client-menu>
+<client-menu menu="GENRELOCATION">gettext:Genre x Loc</client-menu>
+<custom-control name="search" predicate="search-shown" value="TRUE">gettext:Search</custom-control>
+<client-menu menu="BOOKMARKS">gettext:Bookmarks</client-menu>
+<client-menu menu="PRESETS" predicate="my-stuff-out-of-main-menu" value="FALSE">gettext:Presets</client-menu>
+<dynamic-item id="200016" token="TOPLEVEL" scope="LIST" type="menu">gettext:Live365</dynamic-item>
+<dynamic-item id="200027" token="TOPLEVEL" scope="LIST" type="menu">gettext:Radiotime</dynamic-item>
+<dynamic-item id="200024" token="TOPLEVEL" scope="LIST" type="menu">gettext:Shoutcast</dynamic-item>
+<dynamic-item id="200028" token="TOPLEVEL" scope="LIST" type="menu" icon="SIRIUS">gettext:Sirius</dynamic-item>
+</item-group>
+<item-group name="MYSTUFF_ITEMS"><dynamic-item id="20009" type="menu">gettext:My Stations</dynamic-item>
+<dynamic-item id="200011" type="menu">gettext:My Streams</dynamic-item>
+<dynamic-item id="200014" type="menu">gettext:My Podcasts</dynamic-item>
+<dynamic-item id="200021" token="MYSTUFF" type="menu">gettext:My Last.fm</dynamic-item>
+<dynamic-item id="20008" token="MYSTUFF" type="menu">gettext:My MP3tunes</dynamic-item>
+<dynamic-item id="200025" token="MYSTUFF" type="menu">gettext:My Pandora</dynamic-item>
+<dynamic-item id="200037" token="MYSTUFF" type="menu">gettext:My Recommendations</dynamic-item>
+<dynamic-item id="200026" token="MYSTUFF" type="menu">gettext:My Rhapsody</dynamic-item>
+<dynamic-item id="200016" token="MYSTUFF" type="menu">gettext:My Live365</dynamic-item>
+<client-menu menu="HISTORY" predicate="stations-history" value="TRUE">gettext:My History</client-menu>
+</item-group>
+<menu><insert-item-group name="STATIONS_ITEMS" predicate="hotel-mode"></insert-item-group>
+<menu icon="STATIONS" predicate="old-ui" value="FALSE"><name action="STATIONS">gettext:Internet Radio</name>
+<insert-item-group name="STATIONS_ITEMS" predicate="hotel-mode" value="FALSE"></insert-item-group>
+<menu predicate="my-stuff-out-of-main-menu" value="TRUE"><name>gettext:My Stuff</name>
+<insert-item-group name="MYSTUFF_ITEMS"></insert-item-group>
+<insert-item-group name="PERSONAL_RADIO_ITEMS"></insert-item-group>
+</menu>
+<client-menu menu="PRESETS" predicate="my-stuff-out-of-main-menu" value="TRUE">gettext:Presets</client-menu>
+</menu>
+<menu icon="STATIONS" predicate="old-ui" value="TRUE"><name action="STATIONS">gettext:Stations</name>
+<insert-item-group name="STATIONS_ITEMS" predicate="hotel-mode" value="FALSE"></insert-item-group>
+<menu predicate="my-stuff-out-of-main-menu" value="TRUE"><name>gettext:My Stuff</name>
+<insert-item-group name="MYSTUFF_ITEMS"></insert-item-group>
+<insert-item-group name="PERSONAL_RADIO_ITEMS"></insert-item-group>
+</menu>
+<client-menu menu="PRESETS" predicate="my-stuff-out-of-main-menu" value="TRUE">gettext:Presets</client-menu>
+</menu>
+<menu icon="PODCASTS"><name>gettext:Podcasts</name>
+<dynamic-item id="200022" token="TOPLEVEL" type="menu">gettext:[By Category]</dynamic-item>
+<dynamic-item id="200019" token="TOPLEVEL" type="menu">gettext:BBC Podcasts</dynamic-item>
+<dynamic-item id="200018" token="TOPLEVEL" type="menu">gettext:BlogTalkRadio</dynamic-item>
+</menu>
+<menu icon="MY_STUFF" predicate="my-stuff-out-of-main-menu" value="FALSE"><name>gettext:My Stuff</name>
+<insert-item-group name="MYSTUFF_ITEMS"></insert-item-group>
+<insert-item-group name="PERSONAL_RADIO_ITEMS"></insert-item-group>
+<client-menu menu="PRESETS" predicate="my-stuff-out-of-main-menu" value="TRUE">gettext:Presets</client-menu>
+</menu>
+<client-menu menu="MEDIAPLAYER" icon="MEDIAPLAYER">gettext:Media Player</client-menu>
+<client-menu menu="CONFIGURE" icon="CONFIGURE" predicate="new-or-last" value="FALSE">gettext:Configure</client-menu>
+<client-menu menu="FM" icon="FM">gettext:FM</client-menu>
+<client-menu menu="DAB" icon="DAB">gettext:DAB</client-menu>
+<client-menu menu="CD" icon="CD">gettext:CD</client-menu>
+<client-menu menu="AUX_IN" icon="AUX_IN">gettext:Auxiliary Input</client-menu>
+<client-menu menu="LINE_IN" icon="LINE_IN">gettext:Line In</client-menu>
+<client-menu menu="AUX1" icon="AUX1">gettext:AUX 1</client-menu>
+<client-menu menu="AUX2" icon="AUX2">gettext:AUX 2</client-menu>
+<client-menu menu="IPOD" icon="IPOD">gettext:iPod</client-menu>
+<client-menu menu="ALARM" icon="ALARM" predicate="alarm-off" value="FALSE">gettext:Alarm Clock</client-menu>
+<client-menu menu="SLEEP" icon="SLEEP" predicate="sleep-in-main-menu">gettext:Sleep Timer</client-menu>
+<client-menu menu="CONFIGURE" icon="CONFIGURE" predicate="old-ui" value="FALSE">gettext:Settings</client-menu>
+<client-menu menu="CONFIGURE" icon="CONFIGURE" predicate="old-and-last" value="TRUE">gettext:Configure</client-menu>
+<client-menu menu="WIFI_TEST" icon="WIFI_TEST">gettext:Wi-Fi test</client-menu>
+<client-menu menu="TOUCHPANEL" icon="TOUCHPANEL">gettext:Touchpanel</client-menu>
+<client-menu menu="OFF" icon="OFF">gettext:Off</client-menu>
+</menu>
+</top-level>
+# 

@@ -1,0 +1,1226 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>CC WiFi Smart Radio Bridge</title>
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@300;400;500;600;700&display=swap" rel="stylesheet">
+    <style>
+        :root {
+            --bg-dark: #0a0f1d;
+            --surface-card: rgba(22, 30, 49, 0.75);
+            --surface-card-hover: rgba(30, 41, 69, 0.95);
+            --surface-border: rgba(255, 255, 255, 0.08);
+            --accent-primary: #38bdf8;
+            --accent-glow: rgba(56, 189, 248, 0.25);
+            --accent-success: #10b981;
+            --accent-purple: #818cf8;
+            --text-main: #f8fafc;
+            --text-muted: #94a3b8;
+            --font: 'Outfit', -apple-system, BlinkMacSystemFont, sans-serif;
+        }
+
+        * {
+            box-sizing: border-box;
+            margin: 0;
+            padding: 0;
+            font-family: var(--font);
+        }
+
+        body {
+            background-color: var(--bg-dark);
+            background-image: 
+                radial-gradient(at 0% 0%, rgba(56, 189, 248, 0.12) 0px, transparent 50%),
+                radial-gradient(at 100% 100%, rgba(129, 140, 248, 0.1) 0px, transparent 50%);
+            background-attachment: fixed;
+            color: var(--text-main);
+            min-height: 100vh;
+            padding: 24px 16px;
+        }
+
+        .container {
+            max-width: 1240px;
+            margin: 0 auto;
+        }
+
+        /* Header */
+        header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 16px;
+            margin-bottom: 32px;
+            padding-bottom: 20px;
+            border-bottom: 1px solid var(--surface-border);
+        }
+
+        .brand {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+        }
+
+        .logo-icon {
+            width: 48px;
+            height: 48px;
+            border-radius: 14px;
+            background: linear-gradient(135deg, var(--accent-primary), var(--accent-purple));
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 24px;
+            box-shadow: 0 0 25px var(--accent-glow);
+        }
+
+        .brand h1 {
+            font-size: 24px;
+            font-weight: 700;
+            letter-spacing: -0.5px;
+        }
+
+        .brand p {
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .radio-badge {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            padding: 8px 16px;
+            border-radius: 9999px;
+            background: rgba(16, 185, 129, 0.1);
+            border: 1px solid rgba(16, 185, 129, 0.3);
+            font-size: 13px;
+            font-weight: 500;
+            color: #34d399;
+        }
+
+        .radio-badge.offline {
+            background: rgba(239, 68, 68, 0.1);
+            border-color: rgba(239, 68, 68, 0.3);
+            color: #f87171;
+        }
+
+        .status-dot {
+            width: 8px;
+            height: 8px;
+            border-radius: 50%;
+            background: #10b981;
+            box-shadow: 0 0 10px #10b981;
+        }
+
+        .radio-badge.offline .status-dot {
+            background: #ef4444;
+            box-shadow: 0 0 10px #ef4444;
+        }
+
+        /* Section Layout */
+        .section-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 16px;
+        }
+
+        .section-title {
+            font-size: 18px;
+            font-weight: 600;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+
+        /* Preset Bank Filters */
+        .bank-tabs {
+            display: flex;
+            gap: 6px;
+            flex-wrap: wrap;
+        }
+
+        .bank-btn {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 6px 12px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .bank-btn:hover, .bank-btn.active {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* Presets Grid */
+        .presets-grid {
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(280px, 1fr));
+            gap: 12px;
+            margin-bottom: 40px;
+        }
+
+        .preset-card {
+            background: var(--surface-card);
+            backdrop-filter: blur(12px);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 12px 14px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            transition: all 0.2s ease;
+        }
+
+        .preset-card.active-preset {
+            border-color: rgba(56, 189, 248, 0.25);
+            background: rgba(22, 30, 49, 0.9);
+        }
+
+        .preset-card:hover {
+            border-color: rgba(56, 189, 248, 0.5);
+            transform: translateY(-2px);
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.35);
+        }
+
+        .preset-info {
+            display: flex;
+            align-items: center;
+            gap: 12px;
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .preset-num {
+            width: 32px;
+            height: 32px;
+            min-width: 32px;
+            border-radius: 9px;
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--surface-border);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-weight: 700;
+            font-size: 13px;
+            color: var(--text-muted);
+        }
+
+        .preset-card.active-preset .preset-num {
+            color: var(--accent-primary);
+            background: rgba(56, 189, 248, 0.12);
+            border-color: rgba(56, 189, 248, 0.3);
+        }
+
+        .preset-text {
+            overflow: hidden;
+            flex: 1;
+        }
+
+        .preset-name {
+            font-size: 13.5px;
+            font-weight: 600;
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preset-card:not(.active-preset) .preset-name {
+            color: #64748b;
+            font-weight: 500;
+        }
+
+        .preset-status {
+            font-size: 11px;
+            color: var(--text-muted);
+            white-space: nowrap;
+            overflow: hidden;
+            text-overflow: ellipsis;
+        }
+
+        .preset-actions {
+            display: flex;
+            align-items: center;
+            gap: 6px;
+        }
+
+        .btn-play-radio {
+            background: rgba(56, 189, 248, 0.15);
+            color: var(--accent-primary);
+            border: 1px solid rgba(56, 189, 248, 0.3);
+            border-radius: 8px;
+            padding: 5px 10px;
+            font-size: 12px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: all 0.2s ease;
+            white-space: nowrap;
+        }
+
+        .btn-play-radio:hover {
+            background: var(--accent-primary);
+            color: #000;
+        }
+
+        .btn-clear-preset {
+            background: transparent;
+            color: #64748b;
+            border: none;
+            padding: 4px;
+            font-size: 14px;
+            cursor: pointer;
+            border-radius: 6px;
+            transition: all 0.2s;
+        }
+
+        .btn-clear-preset:hover {
+            color: #ef4444;
+            background: rgba(239, 68, 68, 0.1);
+        }
+
+        /* Search & Discovery Panel */
+        .search-panel {
+            background: var(--surface-card);
+            backdrop-filter: blur(16px);
+            border: 1px solid var(--surface-border);
+            border-radius: 20px;
+            padding: 24px;
+            margin-bottom: 32px;
+        }
+
+        /* Tabs */
+        .tabs {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 20px;
+            border-bottom: 1px solid var(--surface-border);
+            padding-bottom: 12px;
+        }
+
+        .tab-btn {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 15px;
+            font-weight: 600;
+            cursor: pointer;
+            padding: 8px 16px;
+            border-radius: 8px;
+            transition: all 0.2s;
+        }
+
+        .tab-btn.active {
+            background: rgba(255, 255, 255, 0.08);
+            color: var(--accent-primary);
+        }
+
+        /* Search Controls */
+        .search-bar-wrap {
+            display: flex;
+            gap: 12px;
+            margin-bottom: 16px;
+            flex-wrap: wrap;
+        }
+
+        .search-input {
+            flex: 1;
+            min-width: 260px;
+            background: rgba(10, 15, 29, 0.8);
+            border: 1px solid var(--surface-border);
+            border-radius: 12px;
+            padding: 14px 18px;
+            color: #fff;
+            font-size: 15px;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+
+        .search-input:focus {
+            border-color: var(--accent-primary);
+            box-shadow: 0 0 15px var(--accent-glow);
+        }
+
+        .btn-search {
+            background: linear-gradient(135deg, var(--accent-primary), #0284c7);
+            color: #0a0f1d;
+            font-weight: 700;
+            border: none;
+            border-radius: 12px;
+            padding: 0 28px;
+            font-size: 15px;
+            cursor: pointer;
+            transition: opacity 0.2s;
+        }
+
+        .btn-search:hover {
+            opacity: 0.9;
+        }
+
+        /* Quick Filter Chips */
+        .chips-list {
+            display: flex;
+            gap: 8px;
+            flex-wrap: wrap;
+            margin-bottom: 24px;
+        }
+
+        .chip {
+            background: rgba(255, 255, 255, 0.04);
+            border: 1px solid var(--surface-border);
+            color: var(--text-muted);
+            padding: 6px 14px;
+            border-radius: 9999px;
+            font-size: 12px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .chip:hover, .chip.active {
+            background: rgba(56, 189, 248, 0.15);
+            border-color: var(--accent-primary);
+            color: var(--accent-primary);
+        }
+
+        /* Results List */
+        .results-container {
+            display: flex;
+            flex-direction: column;
+            gap: 12px;
+        }
+
+        .station-item {
+            background: rgba(10, 15, 29, 0.6);
+            border: 1px solid var(--surface-border);
+            border-radius: 14px;
+            padding: 14px 18px;
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            flex-wrap: wrap;
+            gap: 14px;
+            transition: border-color 0.2s, background 0.2s;
+        }
+
+        .station-item:hover {
+            border-color: rgba(255, 255, 255, 0.15);
+            background: rgba(15, 23, 42, 0.8);
+        }
+
+        .station-meta {
+            display: flex;
+            align-items: center;
+            gap: 14px;
+            flex: 1;
+            min-width: 250px;
+        }
+
+        .station-favicon {
+            width: 44px;
+            height: 44px;
+            min-width: 44px;
+            border-radius: 10px;
+            background: #1e293b;
+            object-fit: cover;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            font-size: 20px;
+            border: 1px solid var(--surface-border);
+        }
+
+        .station-details h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+        }
+
+        .station-sub {
+            display: flex;
+            gap: 8px;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+
+        .badge {
+            background: rgba(255, 255, 255, 0.06);
+            color: var(--text-muted);
+            padding: 2px 8px;
+            border-radius: 6px;
+            font-size: 11px;
+            font-weight: 500;
+        }
+
+        .badge.bitrate {
+            color: #38bdf8;
+            background: rgba(56, 189, 248, 0.1);
+        }
+
+        .station-actions {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            flex-wrap: wrap;
+        }
+
+        .btn-preview {
+            background: rgba(255, 255, 255, 0.06);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            width: 36px;
+            height: 36px;
+            border-radius: 10px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-preview:hover {
+            background: rgba(255, 255, 255, 0.15);
+            color: var(--accent-primary);
+        }
+
+        .preset-select {
+            background: rgba(10, 15, 29, 0.95);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            padding: 8px 12px;
+            border-radius: 10px;
+            font-size: 13px;
+            outline: none;
+            cursor: pointer;
+            max-width: 170px;
+        }
+
+        .btn-assign {
+            background: linear-gradient(135deg, #10b981, #059669);
+            color: #fff;
+            border: none;
+            padding: 8px 16px;
+            border-radius: 10px;
+            font-size: 13px;
+            font-weight: 600;
+            cursor: pointer;
+            transition: opacity 0.2s, transform 0.1s;
+        }
+
+        .btn-assign:hover {
+            opacity: 0.9;
+            transform: scale(1.02);
+        }
+
+        .pagination {
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            gap: 16px;
+            margin-top: 24px;
+        }
+
+        .btn-page {
+            background: rgba(255, 255, 255, 0.05);
+            border: 1px solid var(--surface-border);
+            color: #fff;
+            padding: 8px 20px;
+            border-radius: 10px;
+            font-size: 14px;
+            font-weight: 500;
+            cursor: pointer;
+            transition: all 0.2s;
+        }
+
+        .btn-page:hover:not(:disabled) {
+            background: rgba(255, 255, 255, 0.1);
+            border-color: var(--accent-primary);
+        }
+
+        .btn-page:disabled {
+            opacity: 0.3;
+            cursor: not-allowed;
+        }
+
+        .page-indicator {
+            font-size: 14px;
+            color: var(--text-muted);
+        }
+
+        #toast {
+            position: fixed;
+            bottom: 24px;
+            right: 24px;
+            background: #1e293b;
+            color: #fff;
+            border: 1px solid var(--accent-primary);
+            box-shadow: 0 10px 25px rgba(0, 0, 0, 0.5);
+            padding: 14px 20px;
+            border-radius: 12px;
+            font-size: 14px;
+            display: none;
+            align-items: center;
+            gap: 10px;
+            z-index: 9999;
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp {
+            from { transform: translateY(100%); opacity: 0; }
+            to { transform: translateY(0); opacity: 1; }
+        }
+
+        /* IP Settings Modal */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(5, 8, 18, 0.78);
+            backdrop-filter: blur(8px);
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            z-index: 10000;
+            padding: 16px;
+        }
+
+        .modal-box {
+            background: #111827;
+            border: 1px solid var(--surface-border);
+            border-radius: 18px;
+            padding: 24px;
+            max-width: 480px;
+            width: 100%;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.6);
+            animation: modalFadeIn 0.2s ease-out;
+        }
+
+        @keyframes modalFadeIn {
+            from { opacity: 0; transform: scale(0.96); }
+            to { opacity: 1; transform: scale(1); }
+        }
+
+        .modal-header {
+            display: flex;
+            align-items: center;
+            justify-content: space-between;
+            margin-bottom: 12px;
+        }
+
+        .modal-header h3 {
+            font-size: 17px;
+            font-weight: 600;
+        }
+
+        .btn-close-modal {
+            background: transparent;
+            border: none;
+            color: var(--text-muted);
+            font-size: 20px;
+            cursor: pointer;
+            padding: 4px;
+            line-height: 1;
+        }
+        .btn-close-modal:hover {
+            color: #fff;
+        }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <!-- Header -->
+    <header>
+        <div class="brand">
+            <div class="logo-icon">📻</div>
+            <div>
+                <h1>CC WiFi Smart Radio Bridge</h1>
+                <p id="headerSubtitle">C. Crane CC WiFi Radio Manager & Stream Gateway</p>
+            </div>
+        </div>
+        <div style="display: flex; align-items: center; gap: 10px; flex-wrap: wrap;">
+            <div id="radioBadge" class="radio-badge" onclick="openIpModal()" style="cursor: pointer;" title="Click to view or change Radio IP">
+                <div class="status-dot"></div>
+                <span id="badgeText">Connecting...</span>
+            </div>
+            <button class="bank-btn" onclick="openIpModal()" style="display: flex; align-items: center; gap: 6px; padding: 7px 12px;" title="Configure Radio IP or Auto-Detect">
+                <span>⚙️</span> Change IP
+            </button>
+        </div>
+    </header>
+
+    <!-- IP Settings Modal -->
+    <div id="ipModalOverlay" class="modal-overlay" style="display: none;" onclick="if(event.target===this) closeIpModal()">
+        <div class="modal-box">
+            <div class="modal-header">
+                <h3>⚙️ CC WiFi Radio Connection</h3>
+                <button class="btn-close-modal" onclick="closeIpModal()">✕</button>
+            </div>
+            <p style="color: var(--text-muted); font-size: 13.5px; line-height: 1.5; margin-bottom: 16px;">
+                Enter your CC WiFi radio's IP address (Wi-Fi or LAN), or let the server auto-detect it on your local network.
+            </p>
+            <div style="margin-bottom: 16px;">
+                <label style="display: block; font-size: 13px; font-weight: 600; margin-bottom: 6px; color: var(--text-muted);">Radio IP Address:</label>
+                <div style="display: flex; gap: 10px;">
+                    <input type="text" id="modalRadioIp" class="search-input" style="flex: 1; padding: 10px 14px; font-size: 14px;" placeholder="e.g. 192.168.1.141" onkeydown="if(event.key==='Enter') saveRadioIp()" />
+                    <button class="btn-search" onclick="saveRadioIp()" style="padding: 0 18px; font-size: 13.5px;">Save & Connect</button>
+                </div>
+            </div>
+            <div style="display: flex; align-items: center; justify-content: space-between; gap: 10px; padding-top: 14px; border-top: 1px solid var(--surface-border); flex-wrap: wrap;">
+                <button class="bank-btn" onclick="autoDetectRadio()" id="btnAutoDetect" style="display: flex; align-items: center; gap: 6px; padding: 8px 14px; color: var(--accent-primary);">
+                    <span>🔍</span> Auto-Detect Radio (SSDP)
+                </button>
+                <span id="ipModalStatus" style="font-size: 12.5px; color: var(--text-muted);"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Presets 1-40 Grid -->
+    <section>
+        <div class="section-header">
+            <h2 class="section-title"><span>🎛️</span> Radio Presets (Slots 1–40)</h2>
+            <div class="bank-tabs">
+                <button class="bank-btn active" id="bankActive" onclick="filterPresets('active')">Active Only</button>
+                <button class="bank-btn" id="bank1_10" onclick="filterPresets('1-10')">1–10</button>
+                <button class="bank-btn" id="bank11_20" onclick="filterPresets('11-20')">11–20</button>
+                <button class="bank-btn" id="bank21_30" onclick="filterPresets('21-30')">21–30</button>
+                <button class="bank-btn" id="bank31_40" onclick="filterPresets('31-40')">31–40</button>
+                <button class="bank-btn" id="bankAll" onclick="filterPresets('all')">All 40</button>
+                <button onclick="loadPresets()" class="bank-btn" style="color:var(--accent-primary);">↻ Refresh</button>
+            </div>
+        </div>
+        <div class="presets-grid" id="presetsGrid">
+            <!-- Rendered by JS -->
+        </div>
+    </section>
+
+    <!-- Search & Discovery Panel -->
+    <section class="search-panel">
+        <div class="tabs">
+            <button class="tab-btn active" id="tabRadio" onclick="switchTab('radio')">🌐 Live Radio Stations & Artists</button>
+            <button class="tab-btn" id="tabPodcast" onclick="switchTab('podcast')">🎙️ Podcasts</button>
+        </div>
+
+        <!-- Search Bar -->
+        <div class="search-bar-wrap">
+            <input type="text" id="searchInput" class="search-input" placeholder="Search by artist (e.g. Depeche Mode, Beatles), station name, or genre..." onkeydown="if(event.key==='Enter') executeSearch(1)" />
+            <button class="btn-search" onclick="executeSearch(1)">Search</button>
+        </div>
+
+        <!-- Quick Filter Chips -->
+        <div class="chips-list" id="chipsList">
+            <div class="chip" onclick="applyTag('jazz')">Jazz</div>
+            <div class="chip" onclick="applyTag('classical')">Classical</div>
+            <div class="chip" onclick="applyTag('rock')">Classic Rock</div>
+            <div class="chip" onclick="applyTag('80s')">80s Hits</div>
+            <div class="chip" onclick="applyTag('npr')">NPR / News</div>
+            <div class="chip" onclick="applyTag('ambient')">Ambient / Relax</div>
+            <div class="chip" onclick="applyTag('blues')">Blues</div>
+            <div class="chip" onclick="applyTag('electronic')">Electronic</div>
+        </div>
+
+        <!-- Results List -->
+        <div class="results-container" id="resultsContainer">
+            <!-- Station cards rendered here -->
+        </div>
+
+        <!-- Pagination -->
+        <div class="pagination" id="paginationWrap" style="display: none;">
+            <button class="btn-page" id="btnPrev" onclick="changePage(-1)">← Previous</button>
+            <span class="page-indicator" id="pageIndicator">Page 1</span>
+            <button class="btn-page" id="btnNext" onclick="changePage(1)">Next →</button>
+        </div>
+    </section>
+</div>
+
+<!-- Invisible Audio Player for Browser Preview -->
+<audio id="browserAudio"></audio>
+
+<!-- Notification Toast -->
+<div id="toast">
+    <span id="toastIcon">✅</span>
+    <span id="toastMsg">Notification message</span>
+</div>
+
+<script>
+    let currentTab = 'radio';
+    let currentPage = 1;
+    let currentQuery = '';
+    let currentTag = '';
+    const PAGE_LIMIT = 15;
+    const MAX_PRESETS = 40;
+    let currentPlayingUrl = '';
+    let cachedPresets = [];
+    let currentBankFilter = 'active';
+
+    const browserAudio = document.getElementById('browserAudio');
+
+    window.onload = function() {
+        checkStatus();
+        loadPresets();
+        executeSearch(1);
+    };
+
+    function showToast(msg, icon = '✅') {
+        const toast = document.getElementById('toast');
+        document.getElementById('toastMsg').innerText = msg;
+        document.getElementById('toastIcon').innerText = icon;
+        toast.style.display = 'flex';
+        setTimeout(() => { toast.style.display = 'none'; }, 3500);
+    }
+
+    let currentRadioIp = '';
+
+    async function checkStatus() {
+        try {
+            const res = await fetch('/api/status');
+            const data = await res.json();
+            currentRadioIp = data.radio_ip;
+            const badge = document.getElementById('radioBadge');
+            const text = document.getElementById('badgeText');
+            if (data.online) {
+                badge.className = 'radio-badge';
+                text.innerText = `Radio Online (${data.radio_ip})`;
+            } else {
+                badge.className = 'radio-badge offline';
+                text.innerText = `Radio Offline (${data.radio_ip})`;
+            }
+            const subtitle = document.getElementById('headerSubtitle');
+            if (subtitle) {
+                subtitle.innerText = `C. Crane CC WiFi Radio (${data.radio_ip}) Manager & Stream Gateway`;
+            }
+        } catch (e) {
+            console.error(e);
+        }
+    }
+
+    function openIpModal() {
+        document.getElementById('modalRadioIp').value = currentRadioIp || '192.168.1.141';
+        document.getElementById('ipModalStatus').innerText = '';
+        document.getElementById('ipModalOverlay').style.display = 'flex';
+        document.getElementById('modalRadioIp').focus();
+    }
+
+    function closeIpModal() {
+        document.getElementById('ipModalOverlay').style.display = 'none';
+    }
+
+    async function saveRadioIp() {
+        const ipInput = document.getElementById('modalRadioIp').value.trim();
+        const statusSpan = document.getElementById('ipModalStatus');
+        if (!ipInput) {
+            statusSpan.innerText = 'Please enter an IP address';
+            statusSpan.style.color = '#ef4444';
+            return;
+        }
+
+        statusSpan.innerText = 'Connecting to ' + ipInput + '...';
+        statusSpan.style.color = '#38bdf8';
+
+        try {
+            const res = await fetch('/api/settings', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ radio_ip: ipInput })
+            });
+            const data = await res.json();
+            if (data.success) {
+                currentRadioIp = data.radio_ip;
+                statusSpan.innerText = 'Connected!';
+                statusSpan.style.color = '#10b981';
+                showToast(`Connected to radio at ${data.radio_ip}!`, '🎉');
+                setTimeout(() => {
+                    closeIpModal();
+                    checkStatus();
+                    loadPresets();
+                }, 600);
+            } else {
+                statusSpan.innerText = data.error || 'Connection failed';
+                statusSpan.style.color = '#ef4444';
+            }
+        } catch (e) {
+            statusSpan.innerText = 'Network error saving IP';
+            statusSpan.style.color = '#ef4444';
+        }
+    }
+
+    async function autoDetectRadio() {
+        const btn = document.getElementById('btnAutoDetect');
+        const statusSpan = document.getElementById('ipModalStatus');
+        btn.disabled = true;
+        btn.innerText = '🔍 Searching...';
+        statusSpan.innerText = 'Sending SSDP discovery broadcast...';
+        statusSpan.style.color = '#38bdf8';
+
+        try {
+            const res = await fetch('/api/radio/discover', { method: 'POST' });
+            const data = await res.json();
+            if (data.success) {
+                document.getElementById('modalRadioIp').value = data.radio_ip;
+                currentRadioIp = data.radio_ip;
+                statusSpan.innerText = `Found at ${data.radio_ip}!`;
+                statusSpan.style.color = '#10b981';
+                showToast(`Auto-detected radio at ${data.radio_ip}!`, '📡');
+                setTimeout(() => {
+                    closeIpModal();
+                    checkStatus();
+                    loadPresets();
+                }, 700);
+            } else {
+                statusSpan.innerText = data.error || 'Radio not detected';
+                statusSpan.style.color = '#ef4444';
+            }
+        } catch (e) {
+            statusSpan.innerText = 'Discovery error';
+            statusSpan.style.color = '#ef4444';
+        } finally {
+            btn.disabled = false;
+            btn.innerHTML = '<span>🔍</span> Auto-Detect Radio (SSDP)';
+        }
+    }
+
+    function filterPresets(bank) {
+        currentBankFilter = bank;
+        document.querySelectorAll('.bank-btn').forEach(b => b.classList.remove('active'));
+        const btnMap = {
+            'active': 'bankActive',
+            '1-10': 'bank1_10',
+            '11-20': 'bank11_20',
+            '21-30': 'bank21_30',
+            '31-40': 'bank31_40',
+            'all': 'bankAll'
+        };
+        if (btnMap[bank]) document.getElementById(btnMap[bank]).classList.add('active');
+        renderPresetsGrid();
+    }
+
+    async function loadPresets() {
+        const grid = document.getElementById('presetsGrid');
+        grid.innerHTML = '<div style="color:#94a3b8; padding:10px;">Loading 40 presets from radio...</div>';
+        try {
+            const res = await fetch('/api/presets');
+            cachedPresets = await res.json();
+            renderPresetsGrid();
+            updateAllPresetDropdowns();
+        } catch (e) {
+            grid.innerHTML = '<div style="color:#ef4444;">Failed to read presets from radio.</div>';
+        }
+    }
+
+    function renderPresetsGrid() {
+        const grid = document.getElementById('presetsGrid');
+        grid.innerHTML = '';
+
+        let filtered = cachedPresets;
+        if (currentBankFilter === 'active') {
+            filtered = cachedPresets.filter(p => p.url);
+            if (filtered.length === 0) {
+                grid.innerHTML = '<div style="color:#94a3b8; padding:20px; grid-column: 1 / -1;">No active presets stored yet. Click "All 40" or assign a station below!</div>';
+                return;
+            }
+        } else if (currentBankFilter === '1-10') {
+            filtered = cachedPresets.slice(0, 10);
+        } else if (currentBankFilter === '11-20') {
+            filtered = cachedPresets.slice(10, 20);
+        } else if (currentBankFilter === '21-30') {
+            filtered = cachedPresets.slice(20, 30);
+        } else if (currentBankFilter === '31-40') {
+            filtered = cachedPresets.slice(30, 40);
+        }
+
+        filtered.forEach(p => {
+            const hasStation = !!p.url;
+            const card = document.createElement('div');
+            card.className = `preset-card ${hasStation ? 'active-preset' : ''}`;
+            card.innerHTML = `
+                <div class="preset-info">
+                    <div class="preset-num">${p.id}</div>
+                    <div class="preset-text">
+                        <div class="preset-name">${p.name}</div>
+                        <div class="preset-status">${hasStation ? (p.url.includes('/stream?url=') ? '⚡ Bridged Stream' : 'Direct Stream') : 'Empty Slot'}</div>
+                    </div>
+                </div>
+                <div class="preset-actions">
+                    ${hasStation ? `<button class="btn-play-radio" onclick="playPresetOnRadio(${p.id})">▶ Play</button>` : ''}
+                    ${hasStation ? `<button class="btn-clear-preset" onclick="clearPresetSlot(${p.id})" title="Clear this preset">✕</button>` : ''}
+                </div>
+            `;
+            grid.appendChild(card);
+        });
+    }
+
+    async function clearPresetSlot(id) {
+        if (!confirm(`Are you sure you want to clear Preset ${id}?`)) return;
+        showToast(`Clearing Preset ${id}...`, '⏳');
+        try {
+            const res = await fetch('/api/presets/clear', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ preset: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`Preset ${id} cleared.`, '🗑️');
+                loadPresets();
+            } else {
+                showToast(`Error: ${data.error}`, '❌');
+            }
+        } catch (e) {
+            showToast('Failed to clear preset', '❌');
+        }
+    }
+
+    function buildPresetDropdownHtml(selectId) {
+        let firstEmpty = 1;
+        for (let i = 0; i < cachedPresets.length; i++) {
+            if (!cachedPresets[i].url) { firstEmpty = cachedPresets[i].id; break; }
+        }
+
+        const options = [];
+        for (let i = 1; i <= MAX_PRESETS; i++) {
+            const presetObj = cachedPresets.find(p => p.id === i);
+            const isAssigned = presetObj && presetObj.url;
+            const nameSuffix = isAssigned ? ` (${presetObj.name.substring(0, 16)})` : ' [Empty]';
+            const selected = i === firstEmpty ? 'selected' : '';
+            options.push(`<option value="${i}" ${selected}>Preset ${i}${nameSuffix}</option>`);
+        }
+        return `<select class="preset-select" id="${selectId}">${options.join('')}</select>`;
+    }
+
+    function updateAllPresetDropdowns() {
+        document.querySelectorAll('.preset-select').forEach(sel => {
+            const currentVal = sel.value;
+            const selectId = sel.id;
+            sel.outerHTML = buildPresetDropdownHtml(selectId);
+            const newSel = document.getElementById(selectId);
+            if (newSel && currentVal) newSel.value = currentVal;
+        });
+    }
+
+    async function playPresetOnRadio(id) {
+        showToast(`Telling CC WiFi to play Preset ${id}...`, '📻');
+        try {
+            const res = await fetch('/api/radio/play', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ preset: id })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`Preset ${id} is now playing on the radio!`, '🎶');
+            } else {
+                showToast(`Playback error: ${data.error}`, '❌');
+            }
+        } catch (e) {
+            showToast('Failed to trigger playback', '❌');
+        }
+    }
+
+    function switchTab(tab) {
+        currentTab = tab;
+        document.getElementById('tabRadio').className = tab === 'radio' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('tabPodcast').className = tab === 'podcast' ? 'tab-btn active' : 'tab-btn';
+        document.getElementById('chipsList').style.display = tab === 'radio' ? 'flex' : 'none';
+        document.getElementById('searchInput').placeholder = tab === 'radio' 
+            ? 'Search by artist (e.g. Depeche Mode, Beatles), station name, or genre...' 
+            : 'Search podcasts (e.g. The Daily, Radiolab, BBC News)...';
+        executeSearch(1);
+    }
+
+    function applyTag(tag) {
+        currentTag = tag;
+        document.getElementById('searchInput').value = '';
+        executeSearch(1);
+    }
+
+    async function executeSearch(page = 1) {
+        currentPage = page;
+        const q = document.getElementById('searchInput').value.trim();
+        currentQuery = q;
+        const container = document.getElementById('resultsContainer');
+        container.innerHTML = '<div style="color:#94a3b8; padding:20px; text-align:center;">Searching live audio streams...</div>';
+
+        if (currentTab === 'radio') {
+            await searchRadio(q, currentPage);
+        } else {
+            await searchPodcasts(q);
+        }
+    }
+
+    async function searchRadio(q, page) {
+        const container = document.getElementById('resultsContainer');
+        const pagination = document.getElementById('paginationWrap');
+        try {
+            const url = `/api/search?q=${encodeURIComponent(q)}&tag=${encodeURIComponent(currentTag)}&page=${page}&limit=${PAGE_LIMIT}`;
+            const res = await fetch(url);
+            const data = await res.json();
+
+            if (!data.results || data.results.length === 0) {
+                container.innerHTML = '<div style="color:#94a3b8; padding:30px; text-align:center;">No live stations found. Try another search term or genre chip!</div>';
+                pagination.style.display = 'none';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.results.forEach(s => {
+                const item = document.createElement('div');
+                item.className = 'station-item';
+                item.innerHTML = `
+                    <div class="station-meta">
+                        <div class="station-favicon">${s.favicon ? `<img src="${s.favicon}" width="44" height="44" style="border-radius:10px;" onerror="this.outerHTML='📻'">` : '📻'}</div>
+                        <div class="station-details">
+                            <h3>${s.name}</h3>
+                            <div class="station-sub">
+                                <span class="badge">${s.country || 'Global'}</span>
+                                <span class="badge bitrate">${s.codec} ${s.bitrate ? s.bitrate + 'k' : ''}</span>
+                                ${s.tags ? `<span class="badge">${s.tags.split(',').slice(0, 3).join(', ')}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="station-actions">
+                        <button class="btn-preview" onclick="togglePreview('${s.url}', this)" title="Preview in browser">▶</button>
+                        ${buildPresetDropdownHtml(`sel_${s.id}`)}
+                        <button class="btn-assign" onclick="assignStationToPreset('${s.id}', '${escapeQuotes(s.name)}', '${s.url}')">+ Assign to Preset</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+
+            pagination.style.display = 'flex';
+            document.getElementById('pageIndicator').innerText = `Page ${page}`;
+            document.getElementById('btnPrev').disabled = page <= 1;
+            document.getElementById('btnNext').disabled = data.results.length < PAGE_LIMIT;
+
+        } catch (e) {
+            container.innerHTML = '<div style="color:#ef4444; padding:20px;">Search failed to connect to directory.</div>';
+        }
+    }
+
+    async function searchPodcasts(q) {
+        const container = document.getElementById('resultsContainer');
+        const pagination = document.getElementById('paginationWrap');
+        pagination.style.display = 'none';
+        if (!q) {
+            container.innerHTML = '<div style="color:#94a3b8; padding:30px; text-align:center;">Type a podcast name to search.</div>';
+            return;
+        }
+
+        try {
+            const res = await fetch(`/api/podcasts?q=${encodeURIComponent(q)}`);
+            const data = await res.json();
+            if (!data.results || data.results.length === 0) {
+                container.innerHTML = '<div style="color:#94a3b8; padding:30px; text-align:center;">No podcasts found for that search.</div>';
+                return;
+            }
+
+            container.innerHTML = '';
+            data.results.forEach(p => {
+                const item = document.createElement('div');
+                item.className = 'station-item';
+                item.innerHTML = `
+                    <div class="station-meta">
+                        <div class="station-favicon">${p.artwork ? `<img src="${p.artwork}" width="44" height="44" style="border-radius:10px;">` : '🎙️'}</div>
+                        <div class="station-details">
+                            <h3>${p.name}</h3>
+                            <div class="station-sub">
+                                <span class="badge">${p.artist}</span>
+                                ${p.genres ? `<span class="badge">${p.genres.slice(0, 2).join(', ')}</span>` : ''}
+                            </div>
+                        </div>
+                    </div>
+                    <div class="station-actions">
+                        ${buildPresetDropdownHtml(`sel_pod_${p.id}`)}
+                        <button class="btn-assign" onclick="assignPodcastToPreset('${p.id}', '${escapeQuotes(p.name)}', '${p.feed_url}')">+ Assign Latest Ep</button>
+                    </div>
+                `;
+                container.appendChild(item);
+            });
+        } catch (e) {
+            container.innerHTML = '<div style="color:#ef4444; padding:20px;">Podcast search error.</div>';
+        }
+    }
+
+    async function assignPodcastToPreset(id, name, feedUrl) {
+        const select = document.getElementById(`sel_pod_${id}`);
+        const presetNum = select.value;
+        showToast(`Fetching latest episode of ${name}...`, '⏳');
+
+        try {
+            const epRes = await fetch(`/api/podcasts/latest?feed=${encodeURIComponent(feedUrl)}`);
+            const epData = await epRes.json();
+            if (epData.stream_url) {
+                await assignStationToPreset(id, `${name}: ${epData.title}`, epData.stream_url, presetNum);
+            } else {
+                showToast('Could not find playable MP3 in podcast feed', '❌');
+            }
+        } catch (e) {
+            showToast('Failed to fetch podcast episode', '❌');
+        }
+    }
+
+    async function assignStationToPreset(id, name, url, directPreset = null) {
+        const select = document.getElementById(`sel_${id}`);
+        const presetNum = directPreset || (select ? select.value : 1);
+
+        showToast(`Assigning to Preset ${presetNum} on CC WiFi...`, '⏳');
+        try {
+            const res = await fetch('/api/presets/assign', {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({
+                    preset: presetNum,
+                    name: name,
+                    url: url,
+                    play_now: true
+                })
+            });
+            const data = await res.json();
+            if (data.success) {
+                showToast(`Assigned to Preset ${presetNum}! Playing now on radio.`, '🎉');
+                loadPresets();
+            } else {
+                showToast(`Failed: ${data.error}`, '❌');
+            }
+        } catch (e) {
+            showToast('Error communicating with radio', '❌');
+        }
+    }
+
+    function togglePreview(url, btn) {
+        if (currentPlayingUrl === url && !browserAudio.paused) {
+            browserAudio.pause();
+            btn.innerText = '▶';
+            currentPlayingUrl = '';
+        } else {
+            browserAudio.src = url;
+            browserAudio.play().then(() => {
+                document.querySelectorAll('.btn-preview').forEach(b => b.innerText = '▶');
+                btn.innerText = '⏸';
+                currentPlayingUrl = url;
+            }).catch(() => {
+                showToast('Stream cannot preview in browser (CORS or codec)', '⚠️');
+            });
+        }
+    }
+
+    function changePage(delta) {
+        executeSearch(currentPage + delta);
+    }
+
+    function escapeQuotes(str) {
+        return (str || '').replace(/'/g, "\\'").replace(/"/g, '&quot;');
+    }
+</script>
+
+</body>
+</html>

@@ -1,0 +1,13 @@
+# Python bytecode and cache
+__pycache__/
+*.py[cod]
+*$py.class
+server/__pycache__/
+
+# Nested third-party git repository
+reciva-patcher/
+
+# OS metadata
+Thumbs.db
+[Dd]esktop.ini
+.DS_Store

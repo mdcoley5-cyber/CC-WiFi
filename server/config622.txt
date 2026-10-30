@@ -1,0 +1,72 @@
+#############################################################################
+#
+# DESCRIPTION: kChampion MX-200iF-D-6
+#              MX-200iF-D-6 (cf797) clone
+#
+#############################################################################
+# 
+# (c) Copyright 2002 to 2007 Reciva Limited.
+#
+# No part of this document may be reproduced in any material
+# form (including photocopying or storing it in any medium by
+# electronic means) without the written permission of Reciva Limited.
+# 
+#############################################################################
+
+include config805_common.txt
+
+Option:
+default-language
+en_US
+
+Option:
+reply-button-function
+on
+
+Option:
+standby-text
+CC WiFi Radio
+
+Option:
+clock-screen-format
+banner/clk2
+
+################################
+# Alarm clock options - start
+################################
+
+Option:
+number-of-alarms
+5
+
+Option:
+clock-in-config-menu
+off
+
+Option:
+clock-24-hour
+off
+
+Option:
+clock-format-menu
+on
+
+Option:
+date-format
+us
+
+################################
+# Alarm clock options - end
+################################
+
+Option:
+mode-switch-controls-network-power
+off
+
+Option:
+soft-power-down
+mode1
+
+Keymap: r2c1 PRESET_2 MP:SKIP_PREVIOUS IROD:SKIP_PREVIOUS ATUN:FM_STEP_DOWN
+Keymap: r2c2 PRESET_3 MP:SKIP_NEXT IROD:SKIP_NEXT ATUN:FM_STEP_UP
+

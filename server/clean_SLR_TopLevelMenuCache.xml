@@ -1,0 +1,15 @@
+<top-level><config-predicates><config-predicate name="old-ui"><require option="ui-level" type="int" value="0"></require>
+</config-predicate>
+<config-predicate name="alarm-off"><require option="alarm-clock" type="select" value="off"></require>
+</config-predicate>
+<config-predicate name="sleep-in-main-menu"><require option="sleep-timer-in-main-menu" type="bool" value="true"></require>
+</config-predicate>
+</config-predicates>
+<menu>
+<client-menu menu="HISTORY" icon="STATIONS">gettext:History</client-menu>
+<client-menu menu="FM" icon="FM">gettext:FM</client-menu>
+<client-menu menu="ALARM" icon="ALARM" predicate="alarm-off" value="FALSE">gettext:Alarm Clock</client-menu>
+<client-menu menu="SLEEP" icon="SLEEP">gettext:Sleep Timer</client-menu>
+<client-menu menu="CONFIGURE" icon="CONFIGURE">gettext:Configure</client-menu>
+</menu>
+</top-level>

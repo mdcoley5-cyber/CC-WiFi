@@ -1,0 +1,6 @@
+{
+  "radio_ip": "192.168.1.180",
+  "radio_user": "admin",
+  "radio_pass": "admin",
+  "port": 5000
+}
