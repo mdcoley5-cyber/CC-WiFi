@@ -83,11 +83,11 @@ On the **Bottom Row (Odd Pins)**, count holes starting from the **far left (Hole
 3. Keep the radio's power cord **unplugged** for now.
 
 ### Step 4.2: Launch the Recovery Monitor
-On your Windows PC (connected to the same local network):
-1. Navigate to: `e:\Antigravity\CC WiFi\`
-2. Double-click the file:
-   **`Start_Radio_Recovery.bat`**
-   *(Or run in PowerShell: `python "e:\Antigravity\CC WiFi\server\recover_radio.py"`)*
+On your PC (connected to the same local network):
+1. Navigate to the repository root directory.
+2. Run:
+   **`Start_Radio_Recovery.bat`** (Windows)
+   *(Or run: `python server/recover_radio.py`)*
 3. A command window will open with a green title:
    ```text
    ==================================================
@@ -109,8 +109,8 @@ On your Windows PC (connected to the same local network):
 
 ### Step 4.4: Automated Restoration
 The running script (`recover_radio.py`) will automatically:
-1. Detect port 23 open on the radio's IP (e.g. `192.168.1.141`).
-2. Log into the radio with credentials `admin / admin`.
+1. Detect port 23 open on the radio's IP.
+2. Log into the radio with standard credentials `admin / admin`.
 3. Remount the root filesystem read-write: `mount / -orw,remount`.
 4. Overwrite `/root/hwconfig/config622.txt` with factory clean `/root/hwconfig/config622.txt.orig`.
 5. Overwrite `/mnt/config/SLR_TopLevelMenuCache.xml` with factory clean `/mnt/config/SLR_TopLevelMenuCache.xml.orig`.
@@ -137,16 +137,21 @@ Once the script prints `RECOVERY SUCCESSFUL`:
 6. The radio will now boot using its restored factory `config622.txt`.
 7. The LCD will light up, display the clock and standby text (`CC WiFi Radio`), and the power/station buttons will respond normally.
 
+> [!TIP]
+> **Permanent Hardware Bypass Mod (Recommended):**
+> Instead of using a loose jumper wire that requires unseating the daughtercard, you can solder a miniature momentary push-button across Pin 31 (GND, Hole 5) and Pin 29 (AIN2, Hole 6). 
+> When pressed during power-on, it grounds AIN2 to activate HW 620 recovery mode instantly without taking the radio apart. When released, the radio runs normally in HW 622.
+
 ---
 
 ## 6. Files & Scripts Reference
 
 | File | Location | Purpose |
 | :--- | :--- | :--- |
-| **`Start_Radio_Recovery.bat`** | `e:\Antigravity\CC WiFi\` | One-click Windows launcher for recovery |
-| **`recover_radio.py`** | `e:\Antigravity\CC WiFi\server\` | Automated Telnet detection & restore script |
+| **`Start_Radio_Recovery.bat`** | Repository root | One-click Windows launcher for recovery |
+| **`recover_radio.py`** | `server/` | Automated Telnet detection & restore script |
 | **`config622.txt.orig`** | Radio `/root/hwconfig/` | Factory pristine configuration (1295 bytes) |
-| **`config622.txt`** | `e:\Antigravity\CC WiFi\server\` | Local backup copy of factory configuration |
+| **`config622.txt`** | `server/` | Local backup copy of factory configuration |
 | **`SLR_TopLevelMenuCache.xml.orig`**| Radio `/mnt/config/` | Factory pristine menu XML (6706 bytes) |
-| **`j1_resistors.jpg`** | `e:\Antigravity\CC WiFi\server\` | Close-up reference photo of socket J1 |
-| **`fcc_img_2_0.jpg`** | `e:\Antigravity\CC WiFi\server\` | Full motherboard socket layout photo |
+| **`j1_resistors.jpg`** | `server/` | Close-up reference photo of socket J1 |
+| **`fcc_img_2_0.jpg`** | `server/` | Full motherboard socket layout photo |
